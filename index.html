@@ -1,0 +1,78 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Estados e Cidades</title>
+</head>
+<body>
+    <div>
+        <select name="estado" id="estado">
+            <option value="">Selecione um estado</option>
+        </select>
+        <select name="cidade" id="cidade"></select>
+    </div>
+    <br>   
+    <div>
+        <p>
+            <input type="text" id="bairro" value="" name="bairro" placeholder="Bairro">
+            <input type="text" id="logradouro" value="" name="logradouro" placeholder="Logradouro" style="width: 300px;">
+            <input type="text" id="ddd" value="" name="ddd" placeholder="DDD">
+        </p>
+    </div>
+    <div>
+        </p>
+            <input type="text" placeholder="Cep" name="cep" id="cep">
+            <button  id="btn_cep">Buscar</button>
+        </p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        // Carrega as funções jquery
+        $(document).ready(function(){
+
+            // Busca os dados no webservice
+            $.get('http://ddd.pricez.com.br/estados.json', (data, status) => {
+                // console.log(data, status);
+                // Preenche o option com os estados da requisição
+                data.payload.forEach(function(state, index) {
+                    $('#estado').append(`<option value=${state}>${state}</option`);
+                });
+            })
+
+            $('#estado').on('change',(event) => {
+                // console.log(event, event.target.value);
+                var estado_selecionado = event.target.value.toLowerCase();
+                // Limpa o combo de cidade se o estado não existir ou for vazio
+                if(!estado_selecionado){
+                    $('#cidade').html('');
+                }
+                $.get(`http://ddd.pricez.com.br/estados/${estado_selecionado}.json`, (data, status) => {
+                    // console.log(data)
+                    // Limpa o campo ao mudar de valor
+                    $('#cidade').html('');
+                    // Preenche o optiom com as cidades do estado selecionado
+                    data.payload.forEach(function(response, index) {
+                        $('#cidade').append(`<option value=${response.cidade}>${response.cidade}</option`);
+                    });
+                })
+            })
+
+            $('#btn_cep').on('click', (event) => {
+                $.get(`http://ddd.pricez.com.br/cep/${$('#cep').val()}.json`, (data, status) => {
+                    //console.log(data);
+                    console.log(data.payload)
+                   
+                    $('#estado').html(`<option value=${data.payload.estado}>${data.payload.estado}</option`);                    
+                    $('#cidade').html(`<option value=${data.payload.cidade}>${data.payload.cidade}</option`);
+                     
+                    $("#bairro").val(`${data.payload.bairro}`);
+                    $("#logradouro").val(`${data.payload.logradouro}`);
+                    $("#ddd").val(`${data.payload.ddd}`);                    
+                });                     
+            })
+        });
+    </script>
+</body>
+</html>
